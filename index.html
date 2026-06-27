@@ -192,16 +192,17 @@
   async function logAccess(email) {
     try {
       const ip = await fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => 'unknown');
-      const payload = {
-        email: email,
-        ip: ip,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent
-      };
+      const timestamp = new Date().toISOString();
+      const device = navigator.userAgent;
       if (LOG_URL) {
-        fetch(LOG_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+        // Use URL params instead of POST body to avoid CORS preflight
+        const url = LOG_URL
+          + '?timestamp=' + encodeURIComponent(timestamp)
+          + '&email='     + encodeURIComponent(email)
+          + '&ip='        + encodeURIComponent(ip)
+          + '&userAgent=' + encodeURIComponent(device);
+        fetch(url, { method:'GET', mode:'no-cors' });
       }
-      console.log('Access logged:', payload);
     } catch(e) {}
   }
 
