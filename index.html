@@ -64,6 +64,160 @@
 </head>
 <body>
 
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<div id="auth-screen" style="position:fixed;inset:0;background:#0f1117;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:16px;padding:40px 48px;text-align:center;width:360px;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+    <div style="font-size:32px;margin-bottom:10px;">&#128230;</div>
+    <h2 style="color:#e2e8f0;font-size:18px;font-weight:700;margin-bottom:4px;">Savana Dashboard</h2>
+    <p style="color:#718096;font-size:12px;margin-bottom:28px;">Access restricted to @urbanic.com accounts</p>
+
+    <!-- Step 1: Email input -->
+    <div id="step-email">
+      <input id="email-input" type="email" placeholder="Enter your @urbanic.com email"
+        style="width:100%;padding:11px 14px;background:#0f1117;border:1px solid #4a5568;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;margin-bottom:10px;box-sizing:border-box;"
+        onkeydown="if(event.key==='Enter')sendOTP()">
+      <button onclick="sendOTP()" id="send-btn"
+        style="width:100%;padding:11px;background:#2b6cb0;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s;">
+        Send OTP
+      </button>
+      <p id="email-err" style="color:#fc8181;font-size:12px;margin-top:10px;display:none;"></p>
+    </div>
+
+    <!-- Step 2: OTP input (hidden initially) -->
+    <div id="step-otp" style="display:none;">
+      <p style="color:#68d391;font-size:12px;margin-bottom:16px;" id="otp-sent-msg"></p>
+      <input id="otp-input" type="text" placeholder="Enter 6-digit OTP" maxlength="6"
+        style="width:100%;padding:11px 14px;background:#0f1117;border:1px solid #4a5568;border-radius:8px;color:#e2e8f0;font-size:18px;outline:none;margin-bottom:10px;box-sizing:border-box;letter-spacing:6px;text-align:center;"
+        onkeydown="if(event.key==='Enter')verifyOTP()">
+      <button onclick="verifyOTP()" id="verify-btn"
+        style="width:100%;padding:11px;background:#276749;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+        Verify OTP
+      </button>
+      <button onclick="resetToEmail()"
+        style="width:100%;padding:8px;background:transparent;color:#718096;border:1px solid #4a5568;border-radius:8px;font-size:12px;cursor:pointer;">
+        Use different email
+      </button>
+      <p id="otp-err" style="color:#fc8181;font-size:12px;margin-top:10px;display:none;"></p>
+    </div>
+
+    <p style="color:#4a5568;font-size:10px;margin-top:20px;">Access logs are recorded for security</p>
+  </div>
+</div>
+
+<script>
+  // ── CONFIG — replace with your EmailJS values ──
+  const EMAILJS_PUBLIC_KEY  = 'Sf6BpnKJBWkpG_wlw';
+  const EMAILJS_SERVICE_ID  = 'service_f9s4ioa';
+  const EMAILJS_TEMPLATE_ID = 'template_3yy6gdg';
+
+  // ── Google Sheet logging URL (optional — paste Apps Script URL here) ──
+  const LOG_URL = '';
+
+  let _otp = '';
+  let _email = '';
+  let _otpExpiry = 0;
+
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  async function sendOTP() {
+    const email = document.getElementById('email-input').value.trim().toLowerCase();
+    const errEl = document.getElementById('email-err');
+    errEl.style.display = 'none';
+
+    if (!email.endsWith('@urbanic.com')) {
+      errEl.textContent = 'Only @urbanic.com email addresses are allowed.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('send-btn');
+    btn.textContent = 'Sending...';
+    btn.style.opacity = '0.6';
+    btn.disabled = true;
+
+    _otp = generateOTP();
+    _email = email;
+    _otpExpiry = Date.now() + 10 * 60 * 1000; // 10 min expiry
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email: email,
+        otp: _otp,
+        user_email: email
+      });
+
+      document.getElementById('step-email').style.display = 'none';
+      document.getElementById('step-otp').style.display = 'block';
+      document.getElementById('otp-sent-msg').textContent = 'OTP sent to ' + email;
+      document.getElementById('otp-input').focus();
+    } catch (err) {
+      errEl.textContent = 'Failed to send OTP. Check email and try again.';
+      errEl.style.display = 'block';
+      btn.textContent = 'Send OTP';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
+  async function verifyOTP() {
+    const entered = document.getElementById('otp-input').value.trim();
+    const errEl = document.getElementById('otp-err');
+    errEl.style.display = 'none';
+
+    if (Date.now() > _otpExpiry) {
+      errEl.textContent = 'OTP expired. Please request a new one.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    if (entered !== _otp) {
+      errEl.textContent = 'Incorrect OTP. Please try again.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // Log access
+    logAccess(_email);
+
+    // Unlock dashboard
+    document.getElementById('auth-screen').style.display = 'none';
+  }
+
+  async function logAccess(email) {
+    try {
+      const ip = await fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => d.ip).catch(() => 'unknown');
+      const payload = {
+        email: email,
+        ip: ip,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      };
+      if (LOG_URL) {
+        fetch(LOG_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+      }
+      console.log('Access logged:', payload);
+    } catch(e) {}
+  }
+
+  function resetToEmail() {
+    _otp = '';
+    _email = '';
+    document.getElementById('step-otp').style.display = 'none';
+    document.getElementById('step-email').style.display = 'block';
+    document.getElementById('email-input').value = '';
+    document.getElementById('otp-input').value = '';
+    document.getElementById('send-btn').textContent = 'Send OTP';
+    document.getElementById('send-btn').style.opacity = '1';
+    document.getElementById('send-btn').disabled = false;
+  }
+</script>
+
 <div class="header">
   <div>
     <h1>&#128230; Savana Performance Dashboard</h1>
@@ -270,35 +424,7 @@ const TIP = {
   titleColor:'#e2e8f0', bodyColor:'#a0aec0', padding:10
 };
 
-// Vertical annotation plugin (pure JS, no plugin needed — draw via afterDraw)
-function splitPlugin(splitIdx) {
-  return {
-    id: 'splitLine',
-    afterDraw(chart) {
-      const ctx = chart.ctx;
-      const xScale = chart.scales.x;
-      const yScale = chart.scales.y;
-      if (!xScale || !yScale) return;
-      const x = xScale.getPixelForValue(splitIdx - 0.5);
-      ctx.save();
-      ctx.beginPath();
-      ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-      ctx.lineWidth = 1.5;
-      ctx.moveTo(x, yScale.top);
-      ctx.lineTo(x, yScale.bottom);
-      ctx.stroke();
-      ctx.restore();
-      // label
-      ctx.save();
-      ctx.font = '10px Segoe UI';
-      ctx.fillStyle = 'rgba(160,174,192,0.7)';
-      ctx.textAlign = 'center';
-      ctx.fillText('Monthly | Weekly', x, yScale.top - 6);
-      ctx.restore();
-    }
-  };
-}
+function splitPlugin(splitIdx) { return { id: 'splitLine' }; }
 
 const C = {
   blue:'#63b3ed', orange:'#f6ad55', green:'#68d391', red:'#fc8181',
