@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Savana Performance Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%);
+    border-bottom: 1px solid #2d3748;
+    padding: 20px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header h1 { font-size: 21px; font-weight: 700; color: #fff; }
+  .header p  { font-size: 12px; color: #718096; margin-top: 4px; }
+  .badges { display: flex; gap: 8px; }
+  .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge.blue   { background: #2b6cb0; color: #bee3f8; }
+  .badge.green  { background: #276749; color: #c6f6d5; }
+
+  .nav { display: flex; gap: 4px; padding: 14px 32px 0; background: #0f1117; border-bottom: 1px solid #2d3748; }
+  .tab { padding: 9px 22px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 13px; font-weight: 600; color: #718096; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; }
+  .tab:hover { color: #a0aec0; background: #1a1f2e; }
+  .tab.active { background: #1a1f2e; color: #63b3ed; border-color: #2d3748; border-bottom-color: #1a1f2e; }
+
+  .content { padding: 28px 32px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .note-bar {
+    background: #1a2a1a; border: 1px solid #2d6a2d; border-radius: 8px;
+    padding: 9px 16px; margin-bottom: 22px; font-size: 12px; color: #9ae6b4;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .sec-title {
+    font-size: 15px; font-weight: 700; color: #e2e8f0;
+    margin-bottom: 5px; display: flex; align-items: center; gap: 8px;
+  }
+  .sec-title::before { content: ''; display: block; width: 4px; height: 17px; border-radius: 2px; background: #63b3ed; }
+  .sec-sub { font-size: 12px; color: #718096; margin-bottom: 18px; margin-left: 12px; }
+
+  .grid { display: grid; gap: 20px; margin-bottom: 30px; }
+  .g1 { grid-template-columns: 1fr; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+
+  .card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; }
+  .card h3 { font-size: 13px; font-weight: 600; color: #a0aec0; margin-bottom: 3px; }
+  .card .sub { font-size: 11px; color: #4a5568; margin-bottom: 14px; }
+  .cw { position: relative; height: 260px; }
+  .cw.tall { height: 310px; }
+
+  .divider { border: none; border-top: 1px solid #2d3748; margin: 26px 0; }
+
+  .leg-head { background: #16213e; border: 1px solid #2d3748; border-radius: 8px; padding: 9px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .leg-head h4 { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+  .leg-head span { font-size: 11px; color: #718096; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>&#128230; Savana Performance Dashboard</h1>
+    <p>Hybrid view: Jan&#8211;Apr monthly, May onwards weekly</p>
+  </div>
+  <div class="badges">
+    <div class="badge blue">95%ile TAT</div>
+    <div class="badge green">24H Outbound</div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="tab active" onclick="go('tat',this)">&#128666; TAT Performance</div>
+  <div class="tab" onclick="go('wh',this)">&#127981; WH 24H Outbound</div>
+  <div class="tab" onclick="go('cs',this)">&#128222; Customer Complaints</div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════ TAT PAGE ═══════════ -->
+<div class="page active" id="p-tat">
+
+  <div class="note-bar">&#9432; Jan&#8211;Apr = monthly averages &nbsp;|&nbsp; May 2026 onwards = weekly data &nbsp;|&nbsp; All values in days (95th percentile)</div>
+
+  <div class="sec-title">Overall — Fast vs Standard</div>
+  <div class="sec-sub">Payment to OFD 95%ile TAT (days)</div>
+  <div class="grid g1">
+    <div class="card">
+      <h3>Overall TAT — Fast &amp; Standard</h3>
+      <div class="sub">Combined view across all periods</div>
+      <div class="cw tall"><canvas id="t_overall"></canvas></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sec-title">Fast Shipping — Leg Wise</div>
+  <div class="sec-sub">Local Prepared &#8594; Shipped &#8594; Manifest &#8594; Pickup &#8594; OFD</div>
+  <div class="grid g1">
+    <div class="card">
+      <h3>Fast — All Legs</h3>
+      <div class="sub">All fulfillment legs</div>
+      <div class="cw tall"><canvas id="t_f_legs"></canvas></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sec-title">Standard — First Mile</div>
+  <div class="sec-sub">Payment &#8594; CN Prepared &#8594; CN Shipped &#8594; CN Pickup &#8594; Local Signed</div>
+  <div class="grid g1">
+    <div class="card">
+      <h3>First Mile — All Legs</h3>
+      <div class="sub">All China origin legs</div>
+      <div class="cw tall"><canvas id="t_s_fm_legs"></canvas></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sec-title">Standard — India TAT</div>
+  <div class="sec-sub">Local Signed &#8594; Prepared &#8594; Shipped &#8594; Manifest &#8594; Pickup &#8594; OFD</div>
+  <div class="grid g1">
+    <div class="card">
+      <h3>India TAT — All Legs</h3>
+      <div class="sub">All India domestic legs</div>
+      <div class="cw tall"><canvas id="t_s_in_legs"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ WH PAGE ═══════════ -->
+<div class="page" id="p-wh">
+
+  <div class="note-bar">&#9432; Jan&#8211;Apr = monthly averages &nbsp;|&nbsp; May 2026 onwards = weekly data &nbsp;|&nbsp; 24H Outbound Ratio shown as %</div>
+
+  <div class="sec-title">IN WH — 24 Hour Outbound Ratio</div>
+  <div class="sec-sub">% of orders shipped within 24 hours of preparation</div>
+  <div class="grid g1">
+    <div class="card">
+      <h3>24H Outbound Ratio (%)</h3>
+      <div class="sub">Jan&#8211;Apr monthly + May onwards weekly</div>
+      <div class="cw tall"><canvas id="w_ratio"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Prepared Orders (Units)</h3>
+      <div class="sub">Order count by period</div>
+      <div class="cw"><canvas id="w_orders"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Prepared Qty (Pieces)</h3>
+      <div class="sub">Piece count by period</div>
+      <div class="cw"><canvas id="w_qty"></canvas></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════ CS PAGE ═══════════ -->
+<div class="page" id="p-cs">
+
+  <div class="note-bar">&#9432; Forward (FWD) and Reverse (RVP) complaint rates — Jan to Apr 2026 monthly</div>
+
+  <div class="sec-title">Forward Complaints (FWD)</div>
+  <div class="sec-sub">Volume count, complaint count and complaint % — Jan to Apr 2026</div>
+  <div class="grid g1">
+    <div class="card">
+      <h3>FWD Complaint %</h3>
+      <div class="sub">Forward shipment complaint rate by month</div>
+      <div class="cw tall"><canvas id="cs_fwd_pct"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>FWD Volume Count</h3>
+      <div class="sub">Total forward shipments manifested</div>
+      <div class="cw"><canvas id="cs_fwd_vol"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>FWD Complaint Count</h3>
+      <div class="sub">Number of forward complaints</div>
+      <div class="cw"><canvas id="cs_fwd_cnt"></canvas></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sec-title">Reverse Complaints (RVP)</div>
+  <div class="sec-sub">Volume count, complaint count and complaint % — Jan to Apr 2026</div>
+  <div class="grid g1">
+    <div class="card">
+      <h3>RVP Complaint %</h3>
+      <div class="sub">Reverse shipment complaint rate by month</div>
+      <div class="cw tall"><canvas id="cs_rvp_pct"></canvas></div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>RVP Volume Count</h3>
+      <div class="sub">Total reverse shipments</div>
+      <div class="cw"><canvas id="cs_rvp_vol"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>RVP Complaint Count</h3>
+      <div class="sub">Number of reverse complaints</div>
+      <div class="cw"><canvas id="cs_rvp_cnt"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- end content -->
+
+<script>
+// ═══════════════════════════════════════════════
+// HYBRID LABELS: Jan-Apr monthly, then May weekly
+// ═══════════════════════════════════════════════
+const LABELS = [
+  'Jan-26','Feb-26','Mar-26','Apr-26',
+  'W18(05/04)','W19(05/11)','W20(05/18)','W21(05/25)',
+  'W22(06/01)','W23(06/08)','W24(06/15)'
+];
+
+// Divider annotation index (after Apr = index 3)
+const SPLIT = 4; // first weekly point
+
+// ─── TAT OVERALL ───
+const tFast = [6.571507,6.489253,6.926016,6.563958, 6.883508,6.861542,6.924031,7.847464, 8.366505,7.070352,5.851476];
+const tStd  = [17.043501,20.443975,18.704516,18.341542, 17.389032,13.885485,15.522929,15.856257, 16.796182,16.984134,null];
+
+// ─── FAST LEGS ───
+const fLP  = [0.701887,0.710397,0.92783,0.742948,  0.771548,1.200367,1.668823,2.220281,  2.102904,1.432481,0.946271];
+const fLM  = [0.23505,0.100219,0.118112,0.098934,  0.060506,0.058472,0.071578,0.386572,  0.28115,0.299111,0.121503];
+const fLPK = [0.786007,0.750944,0.803266,0.827094,  0.87986,0.905471,0.769093,1.671963,  2.513417,0.920453,0.849247];
+const fOFD = [5.507767,5.714444,6.199656,5.742387,  5.864509,5.800363,5.750285,5.988032,  6.383175,6.272179,5.005467];
+
+// ─── STD FIRST MILE ───
+const sPay  = [5.05287,4.583872,4.802826,4.747694,  3.88004,2.163425,0.63026,0.85095,   0.61383,0.519268,null];
+const sCNS  = [0.791848,0.840935,0.943159,0.731965,  0.611163,0.600611,0.593179,0.661581,  0.609968,0.590127,null];
+const sCNP  = [0.966755,4.872201,0.96478,0.845352,   0.968287,0.939624,0.928067,0.895035,  0.923748,0.95509,null];
+const sTrans= [7.27945,9.807367,5.718111,5.72338,    5.874826,5.108877,6.397095,7.861632,  6.970058,5.97995,null];
+
+// ─── STD INDIA TAT ───
+const iLS   = [1.098823,2.486107,1.874234,3.697958,  5.363608,1.381602,1.534788,1.535375,  0.831705,0.417621,null];
+const iLP   = [0.742998,1.035649,0.895547,0.85947,   1.380068,1.852177,2.813879,1.870905,  9.017472,9.084233,null];
+const iLM   = [0.440056,0.085712,0.140483,0.121438,  0.074082,0.070162,0.088981,0.91255,   0.544834,0.095705,null];
+const iLPK  = [0.839248,0.845974,0.865708,0.861867,  0.985459,0.792103,1.430673,2.307653,  0.95102,0.832021,null];
+const iOFD  = [5.816285,5.771483,6.084366,5.834823,  5.915216,5.657304,5.889497,6.35824,   6.19903,4.971395,null];
+
+// ─── WH DATA ───
+const wRatio  = [0.997276,0.977257,0.957574,0.987775, 0.931636,0.834424,0.738044,0.661616, 0.649845,0.769559,0.88482];
+const wOrders = [1489965,1005870,1224843,1282681,1488999,1310866, null,null,null,null,null];
+const wQty    = [2977742,2040716,2594685,2741240,3411943,3399700, null,null,null,null,null];
+
+// ═══════════════════════════════════════════════
+// CHART SETUP
+// ═══════════════════════════════════════════════
+Chart.defaults.color = '#718096';
+Chart.defaults.font.family = 'Segoe UI,Arial,sans-serif';
+Chart.defaults.font.size = 11;
+
+const G = { color: 'rgba(255,255,255,0.06)', drawBorder: false };
+const TIP = {
+  backgroundColor:'#1a1f2e', borderColor:'#4a5568', borderWidth:1,
+  titleColor:'#e2e8f0', bodyColor:'#a0aec0', padding:10
+};
+
+// Vertical annotation plugin (pure JS, no plugin needed — draw via afterDraw)
+function splitPlugin(splitIdx) {
+  return {
+    id: 'splitLine',
+    afterDraw(chart) {
+      const ctx = chart.ctx;
+      const xScale = chart.scales.x;
+      const yScale = chart.scales.y;
+      if (!xScale || !yScale) return;
+      const x = xScale.getPixelForValue(splitIdx - 0.5);
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(x, yScale.top);
+      ctx.lineTo(x, yScale.bottom);
+      ctx.stroke();
+      ctx.restore();
+      // label
+      ctx.save();
+      ctx.font = '10px Segoe UI';
+      ctx.fillStyle = 'rgba(160,174,192,0.7)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Monthly | Weekly', x, yScale.top - 6);
+      ctx.restore();
+    }
+  };
+}
+
+const C = {
+  blue:'#63b3ed', orange:'#f6ad55', green:'#68d391', red:'#fc8181',
+  purple:'#b794f4', teal:'#4fd1c5', yellow:'#faf089', pink:'#fbb6ce',
+  cyan:'#76e4f7', gray:'#a0aec0',
+  lime:'#b5f542', coral:'#ff6b6b', sky:'#38bdf8', amber:'#fbbf24',
+  rose:'#f472b6', indigo:'#818cf8', emerald:'#34d399', fuchsia:'#e879f9'
+};
+
+function opts(unit='d', pct=false) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'top', labels:{ boxWidth:12, padding:12, color:'#a0aec0' } },
+      tooltip: { ...TIP, callbacks: { label: ctx => {
+        if (ctx.parsed.y === null) return null;
+        return pct
+          ? ` ${ctx.dataset.label}: ${(ctx.parsed.y*100).toFixed(1)}%`
+          : ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}${unit}`;
+      }}}
+    },
+    scales: {
+      x: { grid: G, ticks: { maxRotation: 40, font:{ size:10 } } },
+      y: { grid: G, ticks: { callback: v => pct ? (v*100).toFixed(0)+'%' : v.toFixed(1)+unit } }
+    }
+  };
+}
+
+function line(id, datasets, pct=false, unit='d') {
+  const sp = splitPlugin(SPLIT);
+  new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels: LABELS,
+      datasets: datasets.map(d => ({
+        ...d, fill: false, tension: 0.35,
+        pointRadius: 4, pointHoverRadius: 7, borderWidth: 2.5,
+        spanGaps: false
+      }))
+    },
+    options: opts(unit, pct),
+    plugins: [sp]
+  });
+}
+
+// ═══════════════════════════════════════════════
+// RENDER TAT CHARTS
+// ═══════════════════════════════════════════════
+line('t_overall', [
+  { label:'Fast',     data:tFast, borderColor:C.blue,   backgroundColor:C.blue   },
+  { label:'Standard', data:tStd,  borderColor:C.orange, backgroundColor:C.orange }
+]);
+
+line('t_f_legs', [
+  { label:'Local Prepared → Local Shipped',     data:fLP,  borderColor:C.sky,     backgroundColor:C.sky     },
+  { label:'Local Shipped → Local Manifest',     data:fLM,  borderColor:C.lime,    backgroundColor:C.lime    },
+  { label:'Local Manifest → Local Pickup',     data:fLPK, borderColor:C.coral,   backgroundColor:C.coral   },
+  { label:'Local Pickup → Out for Delivery',  data:fOFD, borderColor:C.fuchsia, backgroundColor:C.fuchsia }
+]);
+
+line('t_s_fm_legs', [
+  { label:'Payment → CN Prepared',          data:sPay,   borderColor:C.amber,   backgroundColor:C.amber   },
+  { label:'CN Prepared → CN Shipped',    data:sCNS,   borderColor:C.emerald, backgroundColor:C.emerald },
+  { label:'CN Shipped → CN Pickup',      data:sCNP,   borderColor:C.rose,    backgroundColor:C.rose    },
+  { label:'CN Pickup → Local Signed',  data:sTrans, borderColor:C.indigo,  backgroundColor:C.indigo  }
+]);
+
+line('t_s_in_legs', [
+  { label:'Local Signed → Local Prepared',       data:iLS,  borderColor:C.sky,     backgroundColor:C.sky     },
+  { label:'Local Prepared → Local Shipped',      data:iLP,  borderColor:C.rose,    backgroundColor:C.rose    },
+  { label:'Local Shipped → Local Manifest',      data:iLM,  borderColor:C.lime,    backgroundColor:C.lime    },
+  { label:'Local Manifest → Local Pickup',      data:iLPK, borderColor:C.amber,   backgroundColor:C.amber   },
+  { label:'Local Pickup → Out for Delivery',   data:iOFD, borderColor:C.fuchsia, backgroundColor:C.fuchsia }
+]);
+
+// ═══════════════════════════════════════════════
+// RENDER WH CHARTS
+// ═══════════════════════════════════════════════
+line('w_ratio', [
+  { label:'24H Outbound Ratio', data:wRatio, borderColor:C.green, backgroundColor:C.green }
+], true, '');
+
+const M_LABELS = ['Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26'];
+new Chart(document.getElementById('w_orders'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Orders',data:[1489965,1005870,1224843,1282681,1488999,1310866],borderColor:C.blue,backgroundColor:C.blue,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}}); new Chart(document.getElementById('w_qty'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Qty (pieces)',data:[2977742,2040716,2594685,2741240,3411943,3399700],borderColor:C.purple,backgroundColor:C.purple,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:1800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}});
+// orders and qty rendered above as monthly-only
+
+// ═══════════════════════════════════════════════
+// TAB SWITCH
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// CS COMPLAINT CHARTS
+// ═══════════════════════════════════════════════
+const CS_M = ['Jan-26','Feb-26','Mar-26','Apr-26'];
+
+// FWD data
+const fwdVol = [1500172, 998004, 1237591, 1261439];
+const fwdCnt = [2660, 2286, 2892, 2999];
+const fwdPct = [0.0018, 0.0023, 0.0023, 0.0024];
+
+// RVP data
+const rvpVol = [497126, 339456, 415909, 452619];
+const rvpCnt = [8079, 4961, 6247, 6895];
+const rvpPct = [0.0163, 0.0146, 0.0150, 0.0152];
+
+const csOpts = (pct=false, ymin=0) => ({
+  responsive: true, maintainAspectRatio: false,
+  plugins: {
+    legend: { position:'top', labels:{ boxWidth:12, padding:12, color:'#a0aec0' } },
+    tooltip: { ...TIP, callbacks: { label: ctx => pct
+      ? ` ${ctx.dataset.label}: ${(ctx.parsed.y*100).toFixed(2)}%`
+      : ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`
+    }}
+  },
+  scales: {
+    x: { grid: G, ticks:{ font:{ size:11 } } },
+    y: { grid: G, min: ymin, ticks: { callback: v => pct ? (v*100).toFixed(2)+'%' : (v>=1000000 ? (v/1000000).toFixed(2)+'M' : v>=1000 ? (v/1000).toFixed(0)+'K' : v) } }
+  }
+});
+
+const csLine = (id, label, data, color, pct=false, ymin=0) => new Chart(document.getElementById(id), {
+  type: 'line',
+  data: { labels: CS_M, datasets: [{ label, data, borderColor: color, backgroundColor: color, fill:false, tension:0.35, pointRadius:5, pointHoverRadius:7, borderWidth:2.5 }] },
+  options: csOpts(pct, ymin)
+});
+
+csLine('cs_fwd_pct', 'FWD Complaint %', fwdPct, C.red,    true,  0);
+csLine('cs_fwd_vol', 'FWD Volume',       fwdVol, C.blue,   false, 0);
+csLine('cs_fwd_cnt', 'FWD Complaints',   fwdCnt, C.orange, false, 0);
+csLine('cs_rvp_pct', 'RVP Complaint %',  rvpPct, C.purple, true,  0);
+csLine('cs_rvp_vol', 'RVP Volume',       rvpVol, C.teal,   false, 0);
+csLine('cs_rvp_cnt', 'RVP Complaints',   rvpCnt, C.pink,   false, 0);
+
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('p-' + id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
