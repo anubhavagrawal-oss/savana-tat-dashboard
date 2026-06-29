@@ -376,7 +376,7 @@
 // HYBRID LABELS: Jan-Apr monthly, then May weekly
 // ═══════════════════════════════════════════════
 const LABELS = [
-  'Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26',
+  'Jan-26','Feb-26','Mar-26','Apr-26',
   'W17(04/27)','W18(05/04)','W19(05/11)','W20(05/18)','W21(05/25)',
   'W22(06/01)','W23(06/08)','W24(06/15)','W25(06/22)'
 ];
@@ -385,34 +385,32 @@ const LABELS = [
 const SPLIT = 4; // first weekly point
 
 // ─── TAT OVERALL ───
-const tFast = [6.571507,6.489253,6.926016,6.563958, 6.883508,6.861542,6.924031,7.847464, 8.366505,7.070352,5.851476];
-const tStd  = [17.043501,20.443975,18.704516,18.341542, 17.389032,13.885485,15.522929,15.856257, 16.796182,16.984134,null];
+const tFast = [6.571507,6.489253,6.926016,6.563958, 6.883508,6.861542,6.924031,7.847464, 8.366505,7.070352,5.851476, null,null];
+const tStd  = [17.043501,20.443975,18.704516,18.341542, 17.389032,13.885485,15.522929,15.856257, 16.796182,16.984134,null, null,null];
 
 // ─── FAST LEGS ───
-const fLP  = [0.701887,0.710397,0.92783,0.742948,  0.771548,1.200367,1.668823,2.220281,  2.102904,1.432481,0.946271];
-const fLM  = [0.23505,0.100219,0.118112,0.098934,  0.060506,0.058472,0.071578,0.386572,  0.28115,0.299111,0.121503];
-const fLPK = [0.786007,0.750944,0.803266,0.827094,  0.87986,0.905471,0.769093,1.671963,  2.513417,0.920453,0.849247];
-const fOFD = [5.507767,5.714444,6.199656,5.742387,  5.864509,5.800363,5.750285,5.988032,  6.383175,6.272179,5.005467];
+const fLP  = [0.701887,0.710397,0.92783,0.742948,  0.771548,1.200367,1.668823,2.220281,  2.102904,1.432481,0.946271, null,null];
+const fLM  = [0.23505,0.100219,0.118112,0.098934,  0.060506,0.058472,0.071578,0.386572,  0.28115,0.299111,0.121503, null,null];
+const fLPK = [0.786007,0.750944,0.803266,0.827094,  0.87986,0.905471,0.769093,1.671963,  2.513417,0.920453,0.849247, null,null];
+const fOFD = [5.507767,5.714444,6.199656,5.742387,  5.864509,5.800363,5.750285,5.988032,  6.383175,6.272179,5.005467, null,null];
 
 // ─── STD FIRST MILE ───
-const sPay  = [5.05287,4.583872,4.802826,4.747694,  3.88004,2.163425,0.63026,0.85095,   0.61383,0.519268,null];
-const sCNS  = [0.791848,0.840935,0.943159,0.731965,  0.611163,0.600611,0.593179,0.661581,  0.609968,0.590127,null];
-const sCNP  = [0.966755,4.872201,0.96478,0.845352,   0.968287,0.939624,0.928067,0.895035,  0.923748,0.95509,null];
-const sTrans= [7.27945,9.807367,5.718111,5.72338,    5.874826,5.108877,6.397095,7.861632,  6.970058,5.97995,null];
+const sPay  = [5.05287,4.583872,4.802826,4.747694,  3.88004,2.163425,0.63026,0.85095,   0.61383,0.519268,null, null,null];
+const sCNS  = [0.791848,0.840935,0.943159,0.731965,  0.611163,0.600611,0.593179,0.661581,  0.609968,0.590127,null, null,null];
+const sCNP  = [0.966755,4.872201,0.96478,0.845352,   0.968287,0.939624,0.928067,0.895035,  0.923748,0.95509,null, null,null];
+const sTrans= [7.27945,9.807367,5.718111,5.72338,    5.874826,5.108877,6.397095,7.861632,  6.970058,5.97995,null, null,null];
 
 // ─── STD INDIA TAT ───
-const iLS   = [1.098823,2.486107,1.874234,3.697958,  5.363608,1.381602,1.534788,1.535375,  0.831705,0.417621,null];
-const iLP   = [0.742998,1.035649,0.895547,0.85947,   1.380068,1.852177,2.813879,1.870905,  9.017472,9.084233,null];
-const iLM   = [0.440056,0.085712,0.140483,0.121438,  0.074082,0.070162,0.088981,0.91255,   0.544834,0.095705,null];
-const iLPK  = [0.839248,0.845974,0.865708,0.861867,  0.985459,0.792103,1.430673,2.307653,  0.95102,0.832021,null];
-const iOFD  = [5.816285,5.771483,6.084366,5.834823,  5.915216,5.657304,5.889497,6.35824,   6.19903,4.971395,null];
+const iLS   = [1.098823,2.486107,1.874234,3.697958,  5.363608,1.381602,1.534788,1.535375,  0.831705,0.417621,null, null,null];
+const iLP   = [0.742998,1.035649,0.895547,0.85947,   1.380068,1.852177,2.813879,1.870905,  9.017472,9.084233,null, null,null];
+const iLM   = [0.440056,0.085712,0.140483,0.121438,  0.074082,0.070162,0.088981,0.91255,   0.544834,0.095705,null, null,null];
+const iLPK  = [0.839248,0.845974,0.865708,0.861867,  0.985459,0.792103,1.430673,2.307653,  0.95102,0.832021,null, null,null];
+const iOFD  = [5.816285,5.771483,6.084366,5.834823,  5.915216,5.657304,5.889497,6.35824,   6.19903,4.971395,null, null,null];
 
 // ─── WH DATA ───
-const wRatio  = [0.997276,0.977257,0.957574,0.987775,0.80276,0.767988, null,null,null,null,null,null,null,null,null];
-const wOrders = [1489965,1005870,1224843,1282681,1488999,1427267, null,null,null,null,null,null,null,null,null];
-const wQty    = [2977742,2040716,2594685,2741240,3411943,3720383, null,null,null,null,null,null,null,null,null];
-// Weekly ratio only (no monthly for weekly points)
-const wRatioW = [null,null,null,null,null,null, 0.991437,0.931636,0.834424,0.738044,0.661616, 0.649845,0.769559,0.885006,0.828576];
+const wRatio  = [0.997276,0.977257,0.957574,0.987775, 0.991437,0.931636,0.834424,0.738044,0.661616, 0.649845,0.769559,0.885006,0.828576];
+const wOrders = [1489965,1005870,1224843,1282681, 294053,317478,322046,285124,423631, 454962,401804,328790,241711];
+const wQty    = [2977742,2040716,2594685,2741240, 638183,678687,735129,762077,927000, 1113734,963887,976830,665932];
 
 // ═══════════════════════════════════════════════
 // CHART SETUP
@@ -424,7 +422,11 @@ Chart.defaults.font.size = 11;
 const G = { color: 'rgba(255,255,255,0.06)', drawBorder: false };
 const TIP = {
   backgroundColor:'#1a1f2e', borderColor:'#4a5568', borderWidth:1,
-  titleColor:'#e2e8f0', bodyColor:'#a0aec0', padding:10
+  titleColor:'#e2e8f0', bodyColor:'#a0aec0', padding:12,
+  displayColors: true, boxWidth: 10, boxHeight: 10,
+  callbacks: {
+    title: items => items[0].label,
+  }
 };
 
 function splitPlugin(splitIdx) { return { id: 'splitLine' }; }
@@ -440,18 +442,19 @@ const C = {
 function opts(unit='d', pct=false) {
   return {
     responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: { position:'top', labels:{ boxWidth:12, padding:12, color:'#a0aec0' } },
-      tooltip: { ...TIP, callbacks: { label: ctx => {
+      tooltip: { ...TIP, mode: 'index', intersect: false, callbacks: { label: ctx => {
         if (ctx.parsed.y === null) return null;
         return pct
-          ? ` ${ctx.dataset.label}: ${(ctx.parsed.y*100).toFixed(1)}%`
+          ? ` ${ctx.dataset.label}: ${(ctx.parsed.y*100).toFixed(2)}%`
           : ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}${unit}`;
       }}}
     },
     scales: {
       x: { grid: G, ticks: { maxRotation: 40, font:{ size:10 } } },
-      y: { grid: G, ticks: { callback: v => pct ? (v*100).toFixed(0)+'%' : v.toFixed(1)+unit } }
+      y: { grid: G, ticks: { callback: v => pct ? (v*100).toFixed(1)+'%' : v.toFixed(1)+unit } }
     }
   };
 }
@@ -507,13 +510,12 @@ line('t_s_in_legs', [
 // RENDER WH CHARTS
 // ═══════════════════════════════════════════════
 line('w_ratio', [
-  { label:'24H Outbound Ratio (Monthly)', data:wRatio,  borderColor:C.green,  backgroundColor:C.green  },
-  { label:'24H Outbound Ratio (Weekly)',  data:wRatioW, borderColor:C.teal,   backgroundColor:C.teal   }
+  { label:'24H Outbound Ratio', data:wRatio, borderColor:C.green, backgroundColor:C.green }
 ], true, '');
 
-const M_LABELS = ['Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26'];
-new Chart(document.getElementById('w_orders'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Orders',data:[1489965,1005870,1224843,1282681,1488999,1427267],borderColor:C.blue,backgroundColor:C.blue,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}}); new Chart(document.getElementById('w_qty'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Qty (pieces)',data:[2977742,2040716,2594685,2741240,3411943,3720383],borderColor:C.purple,backgroundColor:C.purple,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:1800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}});
-// orders and qty rendered above as monthly-only
+new Chart(document.getElementById('w_orders'), {type:'line',data:{labels:LABELS,datasets:[{label:'Prepared Orders',data:wOrders,borderColor:C.blue,backgroundColor:C.blue,fill:false,tension:0.35,pointRadius:4,pointHoverRadius:7,borderWidth:2.5,spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,mode:'index',intersect:false,callbacks:{label:ctx=>ctx.parsed.y===null?null:' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G,ticks:{maxRotation:40,font:{size:10}}},y:{grid:G,min:200000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}});
+new Chart(document.getElementById('w_qty'), {type:'line',data:{labels:LABELS,datasets:[{label:'Prepared Qty (pieces)',data:wQty,borderColor:C.purple,backgroundColor:C.purple,fill:false,tension:0.35,pointRadius:4,pointHoverRadius:7,borderWidth:2.5,spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,mode:'index',intersect:false,callbacks:{label:ctx=>ctx.parsed.y===null?null:' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G,ticks:{maxRotation:40,font:{size:10}}},y:{grid:G,min:500000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}});
+// orders and qty rendered above
 
 // ═══════════════════════════════════════════════
 // TAB SWITCH
@@ -535,9 +537,10 @@ const rvpPct = [0.0184, 0.0167, 0.0180, 0.0179, 0.0166];
 
 const csOpts = (pct=false, ymin=0) => ({
   responsive: true, maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
   plugins: {
     legend: { position:'top', labels:{ boxWidth:12, padding:12, color:'#a0aec0' } },
-    tooltip: { ...TIP, callbacks: { label: ctx => pct
+    tooltip: { ...TIP, mode: 'index', intersect: false, callbacks: { label: ctx => pct
       ? ` ${ctx.dataset.label}: ${(ctx.parsed.y*100).toFixed(2)}%`
       : ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`
     }}
