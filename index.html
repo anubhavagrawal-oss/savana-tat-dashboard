@@ -376,9 +376,9 @@
 // HYBRID LABELS: Jan-Apr monthly, then May weekly
 // ═══════════════════════════════════════════════
 const LABELS = [
-  'Jan-26','Feb-26','Mar-26','Apr-26',
-  'W18(05/04)','W19(05/11)','W20(05/18)','W21(05/25)',
-  'W22(06/01)','W23(06/08)','W24(06/15)'
+  'Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26',
+  'W17(04/27)','W18(05/04)','W19(05/11)','W20(05/18)','W21(05/25)',
+  'W22(06/01)','W23(06/08)','W24(06/15)','W25(06/22)'
 ];
 
 // Divider annotation index (after Apr = index 3)
@@ -408,9 +408,11 @@ const iLPK  = [0.839248,0.845974,0.865708,0.861867,  0.985459,0.792103,1.430673,
 const iOFD  = [5.816285,5.771483,6.084366,5.834823,  5.915216,5.657304,5.889497,6.35824,   6.19903,4.971395,null];
 
 // ─── WH DATA ───
-const wRatio  = [0.997276,0.977257,0.957574,0.987775, 0.931636,0.834424,0.738044,0.661616, 0.649845,0.769559,0.88482];
-const wOrders = [1489965,1005870,1224843,1282681,1488999,1310866, null,null,null,null,null];
-const wQty    = [2977742,2040716,2594685,2741240,3411943,3399700, null,null,null,null,null];
+const wRatio  = [0.997276,0.977257,0.957574,0.987775,0.80276,0.767988, null,null,null,null,null,null,null,null,null];
+const wOrders = [1489965,1005870,1224843,1282681,1488999,1427267, null,null,null,null,null,null,null,null,null];
+const wQty    = [2977742,2040716,2594685,2741240,3411943,3720383, null,null,null,null,null,null,null,null,null];
+// Weekly ratio only (no monthly for weekly points)
+const wRatioW = [null,null,null,null,null,null, 0.991437,0.931636,0.834424,0.738044,0.661616, 0.649845,0.769559,0.885006,0.828576];
 
 // ═══════════════════════════════════════════════
 // CHART SETUP
@@ -505,11 +507,12 @@ line('t_s_in_legs', [
 // RENDER WH CHARTS
 // ═══════════════════════════════════════════════
 line('w_ratio', [
-  { label:'24H Outbound Ratio', data:wRatio, borderColor:C.green, backgroundColor:C.green }
+  { label:'24H Outbound Ratio (Monthly)', data:wRatio,  borderColor:C.green,  backgroundColor:C.green  },
+  { label:'24H Outbound Ratio (Weekly)',  data:wRatioW, borderColor:C.teal,   backgroundColor:C.teal   }
 ], true, '');
 
 const M_LABELS = ['Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26'];
-new Chart(document.getElementById('w_orders'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Orders',data:[1489965,1005870,1224843,1282681,1488999,1310866],borderColor:C.blue,backgroundColor:C.blue,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}}); new Chart(document.getElementById('w_qty'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Qty (pieces)',data:[2977742,2040716,2594685,2741240,3411943,3399700],borderColor:C.purple,backgroundColor:C.purple,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:1800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}});
+new Chart(document.getElementById('w_orders'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Orders',data:[1489965,1005870,1224843,1282681,1488999,1427267],borderColor:C.blue,backgroundColor:C.blue,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}}); new Chart(document.getElementById('w_qty'), {type:'line',data:{labels:M_LABELS,datasets:[{label:'Prepared Qty (pieces)',data:[2977742,2040716,2594685,2741240,3411943,3720383],borderColor:C.purple,backgroundColor:C.purple,fill:false,tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{boxWidth:12,padding:12,color:'#a0aec0'}},tooltip:{...TIP,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:G},y:{grid:G,min:1800000,ticks:{callback:v=>(v/1000000).toFixed(2)+'M'}}}}});
 // orders and qty rendered above as monthly-only
 
 // ═══════════════════════════════════════════════
@@ -518,17 +521,17 @@ new Chart(document.getElementById('w_orders'), {type:'line',data:{labels:M_LABEL
 // ═══════════════════════════════════════════════
 // CS COMPLAINT CHARTS
 // ═══════════════════════════════════════════════
-const CS_M = ['Jan-26','Feb-26','Mar-26','Apr-26'];
+const CS_M = ['Jan-26','Feb-26','Mar-26','Apr-26','May-26 (1-20)'];
 
 // FWD data
-const fwdVol = [1500172, 998004, 1237591, 1261439];
-const fwdCnt = [2660, 2286, 2892, 2999];
-const fwdPct = [0.0018, 0.0023, 0.0023, 0.0024];
+const fwdVol = [1500172, 998004, 1237591, 1261439, 776156];
+const fwdCnt = [2653, 2281, 2886, 2961, 1973];
+const fwdPct = [0.0018, 0.0023, 0.0023, 0.0023, 0.0025];
 
 // RVP data
-const rvpVol = [497126, 339456, 415909, 452619];
-const rvpCnt = [8079, 4961, 6247, 6895];
-const rvpPct = [0.0163, 0.0146, 0.0150, 0.0152];
+const rvpVol = [440261, 296181, 347522, 385896, 271047];
+const rvpCnt = [8079, 4961, 6247, 6895, 4491];
+const rvpPct = [0.0184, 0.0167, 0.0180, 0.0179, 0.0166];
 
 const csOpts = (pct=false, ymin=0) => ({
   responsive: true, maintainAspectRatio: false,
