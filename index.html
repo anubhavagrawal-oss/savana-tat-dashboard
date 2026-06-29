@@ -535,7 +535,7 @@ const rvpVol = [440261, 296181, 347522, 385896, 271047];
 const rvpCnt = [8079, 4961, 6247, 6895, 4491];
 const rvpPct = [0.0184, 0.0167, 0.0180, 0.0179, 0.0166];
 
-const csOpts = (pct=false, ymin=0) => ({
+const csOpts = (pct=false, ymin=0, ymax=undefined) => ({
   responsive: true, maintainAspectRatio: false,
   interaction: { mode: 'index', intersect: false },
   plugins: {
@@ -547,20 +547,20 @@ const csOpts = (pct=false, ymin=0) => ({
   },
   scales: {
     x: { grid: G, ticks:{ font:{ size:11 } } },
-    y: { grid: G, min: ymin, ticks: { callback: v => pct ? (v*100).toFixed(2)+'%' : (v>=1000000 ? (v/1000000).toFixed(2)+'M' : v>=1000 ? (v/1000).toFixed(0)+'K' : v) } }
+    y: { grid: G, min: ymin, ...(ymax!==undefined && {max:ymax}), ticks: { callback: v => pct ? (v*100).toFixed(2)+'%' : (v>=1000000 ? (v/1000000).toFixed(2)+'M' : v>=1000 ? (v/1000).toFixed(0)+'K' : v) } }
   }
 });
 
-const csLine = (id, label, data, color, pct=false, ymin=0) => new Chart(document.getElementById(id), {
+const csLine = (id, label, data, color, pct=false, ymin=0, ymax=undefined) => new Chart(document.getElementById(id), {
   type: 'line',
   data: { labels: CS_M, datasets: [{ label, data, borderColor: color, backgroundColor: color, fill:false, tension:0.35, pointRadius:5, pointHoverRadius:7, borderWidth:2.5 }] },
-  options: csOpts(pct, ymin)
+  options: csOpts(pct, ymin, ymax)
 });
 
 csLine('cs_fwd_pct', 'FWD Complaint %', fwdPct, C.red,    true,  0);
 csLine('cs_fwd_vol', 'FWD Volume',       fwdVol, C.blue,   false, 0);
 csLine('cs_fwd_cnt', 'FWD Complaints',   fwdCnt, C.orange, false, 0);
-csLine('cs_rvp_pct', 'RVP Complaint %',  rvpPct, C.purple, true,  0);
+csLine('cs_rvp_pct', 'RVP Complaint %',  rvpPct, C.purple, true,  0.01, 0.02);
 csLine('cs_rvp_vol', 'RVP Volume',       rvpVol, C.teal,   false, 0);
 csLine('cs_rvp_cnt', 'RVP Complaints',   rvpCnt, C.pink,   false, 0);
 
